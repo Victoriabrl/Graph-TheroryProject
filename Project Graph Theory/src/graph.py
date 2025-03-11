@@ -22,12 +22,21 @@ def read_constraint_file(filename):
                 duration = parts[1]  
                 predecessors = parts[2:]  # (optional)
                 
-
                 tasks[task_id] = {'duration': duration, 'predecessors': predecessors}
 
                 # Link this task with its predecessors in the adjacency matrix
                 for pred in predecessors:
-                    adj_matrix[pred][task_id] = duration
+                    adj_matrix[pred][task_id] = tasks[pred]['duration']  # Use duration of the predecessor
+
+        # Handle tasks without predecessors (connect them to task 0 with duration 0)
+        for task_id in range(1, num_tasks + 1):
+            if not tasks[task_id]['predecessors']:  # No predecessors
+                adj_matrix[0][task_id] = 0  # Task 0 points to task_id with a duration of 0
+
+        # Handle tasks without successors (connect them to task N+1 with their duration)
+        for task_id in range(1, num_tasks + 1):
+            if not any(task_id in tasks[t]['predecessors'] for t in range(1, num_tasks + 1)):  # No successors
+                adj_matrix[task_id][num_tasks + 1] = tasks[task_id]['duration']
 
         # Return the adjacency matrix and task information
         return adj_matrix, tasks
@@ -37,6 +46,3 @@ def read_constraint_file(filename):
         print(f"The file {filename} was not found.")
     except Exception as e:
         print(f"Error processing the file: {e}")
-
-
-
