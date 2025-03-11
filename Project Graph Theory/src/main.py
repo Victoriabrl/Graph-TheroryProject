@@ -1,4 +1,5 @@
 from graph import read_constraint_file
+
 def main():
     while True:
         filename = input("Enter the name of the .txt file (or 'exit' to quit): ")
@@ -55,28 +56,52 @@ def main():
                 # Align the task number in the first column
                 print(f"{i:<4}", end="")  
 
-                # For task 0, display '*' where there is no connection to another task (no predecessors)
-                if i == 0:
-                    for j in range(1, num_vertices+1):
-                        if tasks[j]['predecessors'] == '' :
+                if i == 0:  # Handle task 0 (fictive task)
+                    for j in range(1, num_vertices + 1):
+                        if tasks[j]['predecessors'] == [] :
                             print(f"{'*':<4}", end="")
                         else:
-                                print(f"{'0':<4}", end="")
-                    print(f"{'*':<4}", end="")  # Add '*' for the fictive N+1 task as well  # Only check tasks from 1 to N
+                            print(f"{'0':<4}", end="")
+                    print(f"{'*':<4}", end="")  # Add '*' for the fictive N+1 task as well
+                elif i == num_vertices + 1:  # Handle task N+1 (fictive task)
+                    for j in range(num_vertices + 1):  # Only tasks from 0 to N
+                        if adj_matrix[j][i] != 0:  # If there's a relation to N+1, display it
+                            print(f"{adj_matrix[j][i]:<4}", end="")
+                        else:
+                            print(f"{'*':<4}", end="")  # No relation for tasks with no successors
+                    print(f"{'*':<4}", end="")  # Add '*' for the N+1 task
                 else:
                     for j in range(num_vertices + 2):
-                        # Replace 0 with '*' where there is no relation (except for fictive tasks)
-                        if adj_matrix[i][j] == 0 and i != 0 :
+                        if adj_matrix[i][j] == 0 and i != 0:
                             print(f"{'*':<4}", end="")
                         else:
                             print(f"{adj_matrix[i][j]:<4}", end="")
                 print()  # Newline after each row
 
-
-            # Display task information
+            # Display task information including fictive tasks 0 and N+1
             print("\nTask information:")
+            
+            # Display task 0 (fictive task)
+            print(f"Task 0: {{'duration': 0, 'predecessors': []}}")
+
+            # Add task 1 to N+1
             for task_id, task_info in tasks.items():
+                if task_id == 1:
+                    task_info['predecessors'] = [0]  # Tâche 1 a pour prédécesseur la tâche 0
+                elif task_id != num_vertices + 1:  # Ne pas ajouter de prédécesseur pour N+1
+                    task_info['predecessors'] = [0] if not task_info['predecessors'] else task_info['predecessors']
+
                 print(f"Task {task_id}: {task_info}")
+            
+            # Display task N+1 (fictive task)
+            print(f"Task {num_vertices + 1}: {{'duration': 0, 'predecessors': [", end="")
+            # List the tasks that are predecessors of N+1
+            for i in range(1, num_vertices + 1):
+                if adj_matrix[i][num_vertices + 1] != 0:
+                    print(f"{i}", end="")
+                    if i != num_vertices:
+                        print(", ", end="")
+            print("]}}")
 
         except FileNotFoundError:
             print(f"The specified file '{filename}' was not found. Please try again.")
@@ -86,8 +111,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-
-
-
-#data/testadj.txt
